@@ -231,11 +231,13 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 	}
 
 	public void customToggleKeyboardPopup(){
-		List<Emoji> recentEmoji=new ArrayList<>(lp.recentCustomEmoji);
-		if(!recentEmoji.isEmpty())
-			adapter.addAdapter(new SingleCategoryAdapter(recentEmojiCategory=new EmojiCategory(activity.getString(R.string.mo_emoji_recent), recentEmoji)));
-		for(EmojiCategory category : emojis)
-			adapter.addAdapter(new SingleCategoryAdapter(category));
+		if (adapter.getAdapterCount() == 0){
+			List<Emoji> recentEmoji=new ArrayList<>(lp.recentCustomEmoji);
+			if(!recentEmoji.isEmpty())
+				adapter.addAdapter(new SingleCategoryAdapter(recentEmojiCategory=new EmojiCategory(activity.getString(R.string.mo_emoji_recent), recentEmoji)));
+			for(EmojiCategory category : emojis)
+				adapter.addAdapter(new SingleCategoryAdapter(category));
+		}
 		super.toggleKeyboardPopup(null);
 	}
 
