@@ -10,7 +10,7 @@ android {
 
 	compileSdk 34
 	defaultConfig {
-		applicationId "org.joinmastodon.android"
+		applicationId "eu.ff15.meowstodon.android"
 		minSdk 23
 		targetSdk 34
 		versionCode 129
