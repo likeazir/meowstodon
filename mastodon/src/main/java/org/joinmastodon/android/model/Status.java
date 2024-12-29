@@ -4,11 +4,13 @@ import android.text.TextUtils;
 
 import org.joinmastodon.android.api.ObjectValidationException;
 import org.joinmastodon.android.api.RequiredField;
+import org.joinmastodon.android.events.EmojiReactionsUpdatedEvent;
 import org.joinmastodon.android.events.StatusCountersUpdatedEvent;
 import org.joinmastodon.android.ui.text.HtmlParser;
 import org.parceler.Parcel;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -69,6 +71,9 @@ public class Status extends BaseModel implements DisplayItemsParent{
 	public transient TranslationState translationState=TranslationState.HIDDEN;
 	public transient Translation translation;
 
+	public List<EmojiReaction> reactions;
+	protected List<EmojiReaction> emojiReactions; // akkoma
+
 	public Status(){}
 
 	@Override
@@ -99,6 +104,8 @@ public class Status extends BaseModel implements DisplayItemsParent{
 		if(!sensitive && (reblog==null || !reblog.sensitive)){
 			revealedSpoilers.add(SpoilerType.CONTENT_WARNING);
 		}
+		if(emojiReactions!=null) reactions=emojiReactions;
+		if(reactions==null) reactions=new ArrayList<>();
 	}
 
 	@Override
@@ -164,6 +171,10 @@ public class Status extends BaseModel implements DisplayItemsParent{
 
 	public Status getContentStatus(){
 		return reblog!=null ? reblog : this;
+	}
+
+	public void update(EmojiReactionsUpdatedEvent ev){
+		reactions=ev.reactions;
 	}
 
 	public String getStrippedText(){

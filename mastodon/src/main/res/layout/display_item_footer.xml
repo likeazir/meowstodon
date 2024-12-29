@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content">
+	<GridLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:rowCount="2"
+		android:columnCount="1">
+<LinearLayout
 	xmlns:tools="http://schemas.android.com/tools"
 	android:orientation="horizontal"
 	android:layout_width="match_parent"
@@ -111,5 +119,18 @@
 			android:tint="?colorM3Outline"
 			android:gravity="center_vertical"/>
 	</FrameLayout>
+   </LinearLayout>
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			android:orientation="vertical"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content">
 
-</LinearLayout>
+			<Space
+				android:id="@+id/space"
+				android:visibility="gone"
+				android:layout_width="match_parent"
+				android:layout_height="8dp" />
+
+		</LinearLayout>
+</GridLayout>
+</GridLayout>

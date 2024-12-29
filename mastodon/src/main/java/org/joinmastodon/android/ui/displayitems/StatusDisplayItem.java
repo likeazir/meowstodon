@@ -81,6 +81,7 @@ public abstract class StatusDisplayItem{
 			case SECTION_HEADER -> new SectionHeaderStatusDisplayItem.Holder(activity, parent);
 			case NOTIFICATION_HEADER -> new NotificationHeaderStatusDisplayItem.Holder(activity, parent);
 			case INLINE_STATUS -> new InlineStatusStatusDisplayItem.Holder(activity, parent);
+			case EMOJI_REACTIONS -> new EmojiReactionsStatusDisplayItem.Holder(activity, parent);
 			case NOTIFICATION_WITH_BUTTON -> new NotificationWithButtonStatusDisplayItem.Holder(activity, parent);
 		};
 	}
@@ -177,6 +178,10 @@ public abstract class StatusDisplayItem{
 		if(needAddCWItems){
 			cwParentItems.addAll(contentItems);
 		}
+		if(true){
+			boolean showAddButton=true;
+			items.add(new EmojiReactionsStatusDisplayItem(parentID, fragment, statusForContent, accountID, !showAddButton, false));
+		}
 		if((flags & FLAG_NO_FOOTER)==0){
 			FooterStatusDisplayItem footer=new FooterStatusDisplayItem(parentID, fragment, statusForContent, accountID);
 			footer.hideCounts=hideCounts;
@@ -228,7 +233,7 @@ public abstract class StatusDisplayItem{
 		NOTIFICATION_HEADER,
 		FILTER_SPOILER,
 		INLINE_STATUS,
-		NOTIFICATION_WITH_BUTTON
+		EMOJI_REACTIONS, NOTIFICATION_WITH_BUTTON
 	}
 
 	public static abstract class Holder<T> extends BindableViewHolder<T> implements UsableRecyclerView.DisableableClickable{

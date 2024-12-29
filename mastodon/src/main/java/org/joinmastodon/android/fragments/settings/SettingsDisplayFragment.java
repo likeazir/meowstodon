@@ -78,6 +78,7 @@ public class SettingsDisplayFragment extends BaseSettingsFragment<Void>{
 			case AUTO -> R.string.theme_auto;
 			case LIGHT -> R.string.theme_light;
 			case DARK -> R.string.theme_dark;
+			case NEONPINK -> R.string.theme_neon;
 		};
 	}
 
@@ -86,6 +87,7 @@ public class SettingsDisplayFragment extends BaseSettingsFragment<Void>{
 			case LIGHT -> 0;
 			case DARK -> 1;
 			case AUTO -> 2;
+			case NEONPINK -> 3;
 		};
 		new M3AlertDialogBuilder(getActivity())
 				.setTitle(R.string.settings_theme)

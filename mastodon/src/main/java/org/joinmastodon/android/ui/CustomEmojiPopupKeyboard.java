@@ -2,16 +2,22 @@ package org.joinmastodon.android.ui;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -27,6 +33,7 @@ import org.joinmastodon.android.model.Emoji;
 import org.joinmastodon.android.model.EmojiCategory;
 import org.joinmastodon.android.ui.utils.UiUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,11 +58,19 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 	private String domain;
 	private int spanCount=6;
 	private Listener listener;
+	private boolean reaction;
 
 	public CustomEmojiPopupKeyboard(Activity activity, List<EmojiCategory> emojis, String domain){
 		super(activity);
 		this.emojis=emojis;
 		this.domain=domain;
+	}
+
+	public CustomEmojiPopupKeyboard(Activity context, String accountID, List<EmojiCategory> customEmojis, String session, boolean reaction){
+		super(context);
+		this.emojis=customEmojis;
+		this.domain=session;
+		this.reaction = reaction;
 	}
 
 	@Override
@@ -83,8 +98,6 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 		list.setPadding(V.dp(16), 0, V.dp(16), 0);
 		imgLoader=new ListImageLoaderWrapper(activity, list, list, null);
 
-		for(EmojiCategory category:emojis)
-			adapter.addAdapter(new SingleCategoryAdapter(category));
 		list.setAdapter(adapter);
 		list.addItemDecoration(new RecyclerView.ItemDecoration(){
 			@Override
@@ -104,7 +117,10 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 		list.setSelector(null);
 		list.setClipToPadding(false);
 		new StickyHeadersOverlay(activity, 0).install(list);
-
+		if (!reaction){
+			for(EmojiCategory category : emojis)
+				adapter.addAdapter(new SingleCategoryAdapter(category));
+		}
 		LinearLayout ll=new LinearLayout(activity);
 		ll.setOrientation(LinearLayout.VERTICAL);
 		ll.setElevation(V.dp(3));
@@ -116,7 +132,6 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 		bottomPanel.setPadding(V.dp(16), V.dp(8), V.dp(16), V.dp(8));
 		bottomPanel.setBackgroundResource(R.drawable.bg_m3_surface2);
 		ll.addView(bottomPanel, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
 		ImageButton hideKeyboard=new ImageButton(activity);
 		hideKeyboard.setImageResource(R.drawable.ic_keyboard_hide_24px);
 		hideKeyboard.setImageTintList(ColorStateList.valueOf(UiUtils.getThemeColor(activity, R.attr.colorM3OnSurfaceVariant)));
@@ -128,7 +143,6 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 		backspace.setImageResource(R.drawable.ic_backspace_24px);
 		backspace.setImageTintList(ColorStateList.valueOf(UiUtils.getThemeColor(activity, R.attr.colorM3OnSurfaceVariant)));
 		backspace.setBackgroundResource(R.drawable.bg_round_ripple);
-		backspace.setOnClickListener(v->listener.onBackspace());
 		bottomPanel.addView(backspace, new FrameLayout.LayoutParams(V.dp(36), V.dp(36), Gravity.RIGHT));
 
 		return ll;
@@ -145,6 +159,14 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 			emojis=AccountSessionManager.getInstance().getCustomEmojis(domain);
 			adapter.notifyDataSetChanged();
 		}
+	}
+
+	public void customToggleKeyboardPopup(){
+		if (adapter.getAdapterCount() == 0){
+			for(EmojiCategory category : emojis)
+				adapter.addAdapter(new SingleCategoryAdapter(category));
+		}
+		super.toggleKeyboardPopup(null);
 	}
 
 	private class SingleCategoryAdapter extends UsableRecyclerView.Adapter<RecyclerView.ViewHolder> implements ImageLoaderRecyclerAdapter{

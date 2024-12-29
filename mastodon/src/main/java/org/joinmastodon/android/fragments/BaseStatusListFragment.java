@@ -759,6 +759,14 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 		imgLoader.retryFailedRequests();
 	}
 
+	public boolean isInstanceAkkoma(){
+		return false;
+	}
+
+	public String getSession(){
+		return AccountSessionManager.getInstance().getLastActiveAccount().domain;
+	}
+
 	protected class DisplayItemsAdapter extends UsableRecyclerView.Adapter<BindableViewHolder<StatusDisplayItem>> implements ImageLoaderRecyclerAdapter{
 
 		public DisplayItemsAdapter(){

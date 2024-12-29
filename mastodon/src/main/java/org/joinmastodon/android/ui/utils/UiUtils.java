@@ -746,6 +746,11 @@ public class UiUtils{
 					case MEDIUM -> R.style.Theme_Mastodon_Dark_MediumContrast;
 					case HIGH -> R.style.Theme_Mastodon_Dark_HighContrast;
 				};
+				case NEONPINK -> switch(getColorContrastMode(context)){
+					case DEFAULT -> R.style.Theme_NEONPINK;
+					case MEDIUM -> R.style.Theme_NEONPINK_MediumContrast;
+					case HIGH -> R.style.Theme_HighContrast;
+				};
 			};
 		}else{
 			return switch(pref){
@@ -763,6 +768,11 @@ public class UiUtils{
 					case DEFAULT -> R.style.Theme_Mastodon_Dark_Masterial;
 					case MEDIUM -> R.style.Theme_Mastodon_Dark_MediumContrast_Masterial;
 					case HIGH -> R.style.Theme_Mastodon_Dark_HighContrast_Masterial;
+				};
+				case NEONPINK -> switch(getColorContrastMode(context)){
+					case DEFAULT -> R.style.Theme_NEONPINK;
+					case MEDIUM -> R.style.Theme_NEONPINK_MediumContrast;
+					case HIGH -> R.style.Theme_HighContrast;
 				};
 			};
 		}

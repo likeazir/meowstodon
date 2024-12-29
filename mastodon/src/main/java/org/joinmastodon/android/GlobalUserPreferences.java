@@ -103,7 +103,8 @@ public class GlobalUserPreferences{
 	public enum ThemePreference{
 		AUTO,
 		LIGHT,
-		DARK
+		DARK,
+		NEONPINK
 	}
 
 	public enum PreReplySheetType{
