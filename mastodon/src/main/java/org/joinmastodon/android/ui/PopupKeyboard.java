@@ -25,6 +25,7 @@ public abstract class PopupKeyboard{
 	private boolean needShowOnHide=false;
 	private boolean keyboardWasVisible=false;
 	private OnIconChangeListener iconListener;
+	private int bias;
 
 	public static final int ICON_HIDDEN=0;
 	public static final int ICON_ARROW=1;
@@ -160,8 +161,12 @@ public abstract class PopupKeyboard{
 			keyboardPopupView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.AT_MOST | height);
 			height=keyboardPopupView.getMeasuredHeight();
 		}
-		keyboardPopupView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height));
+		keyboardPopupView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height + bias));
 		keyboardPopupView.setVisibility(View.VISIBLE);
+	}
+
+	public void setBias(int bias){
+		this.bias=bias;
 	}
 
 	public interface OnIconChangeListener{

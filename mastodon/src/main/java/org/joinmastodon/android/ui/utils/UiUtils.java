@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.UiModeManager;
-import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
@@ -747,9 +746,9 @@ public class UiUtils{
 					case HIGH -> R.style.Theme_Mastodon_Dark_HighContrast;
 				};
 				case NEONPINK -> switch(getColorContrastMode(context)){
-					case DEFAULT -> R.style.Theme_NEONPINK;
-					case MEDIUM -> R.style.Theme_NEONPINK_MediumContrast;
-					case HIGH -> R.style.Theme_HighContrast;
+					default -> R.style.Neonpink;
+					//case MEDIUM -> R.style.Theme_NEONPINK_MediumContrast;
+					//case HIGH -> R.style.Theme_HighContrast;
 				};
 			};
 		}else{
@@ -770,9 +769,9 @@ public class UiUtils{
 					case HIGH -> R.style.Theme_Mastodon_Dark_HighContrast_Masterial;
 				};
 				case NEONPINK -> switch(getColorContrastMode(context)){
-					case DEFAULT -> R.style.Theme_NEONPINK;
-					case MEDIUM -> R.style.Theme_NEONPINK_MediumContrast;
-					case HIGH -> R.style.Theme_HighContrast;
+					default -> R.style.Neonpink;
+					//case MEDIUM -> R.style.Theme_NEONPINK_MediumContrast;
+					//case HIGH -> R.style.Theme_HighContrast;
 				};
 			};
 		}

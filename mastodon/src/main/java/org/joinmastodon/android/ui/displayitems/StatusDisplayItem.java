@@ -178,10 +178,9 @@ public abstract class StatusDisplayItem{
 		if(needAddCWItems){
 			cwParentItems.addAll(contentItems);
 		}
-		if(true){
-			boolean showAddButton=true;
-			items.add(new EmojiReactionsStatusDisplayItem(parentID, fragment, statusForContent, accountID, !showAddButton, false));
-		}
+		boolean showAddButton=true;
+		EmojiReactionsStatusDisplayItem reactor = new EmojiReactionsStatusDisplayItem(parentID, fragment, statusForContent, accountID, !showAddButton, false);
+		items.add(reactor);
 		if((flags & FLAG_NO_FOOTER)==0){
 			FooterStatusDisplayItem footer=new FooterStatusDisplayItem(parentID, fragment, statusForContent, accountID);
 			footer.hideCounts=hideCounts;

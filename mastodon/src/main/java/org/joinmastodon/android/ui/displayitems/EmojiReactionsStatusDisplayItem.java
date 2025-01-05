@@ -29,7 +29,6 @@ import org.joinmastodon.android.api.requests.statuses.AddStatusReaction;
 import org.joinmastodon.android.api.requests.statuses.DeleteStatusReaction;
 import org.joinmastodon.android.api.requests.statuses.PleromaAddStatusReaction;
 import org.joinmastodon.android.api.requests.statuses.PleromaDeleteStatusReaction;
-import org.joinmastodon.android.api.session.AccountSession;
 import org.joinmastodon.android.api.session.AccountSessionManager;
 import org.joinmastodon.android.events.EmojiReactionsUpdatedEvent;
 import org.joinmastodon.android.fragments.BaseStatusListFragment;
@@ -39,6 +38,7 @@ import org.joinmastodon.android.model.Emoji;
 import org.joinmastodon.android.model.EmojiReaction;
 import org.joinmastodon.android.model.Status;
 import org.joinmastodon.android.ui.CustomEmojiPopupKeyboard;
+import org.joinmastodon.android.ui.CustomEmojiReactionPopupKeyboard;
 import org.joinmastodon.android.ui.utils.TextDrawable;
 import org.joinmastodon.android.ui.utils.UiUtils;
 import org.joinmastodon.android.ui.views.ProgressBarButton;
@@ -111,7 +111,10 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 				@Override
 				public void onSuccess(Status result){
 					if(!keepSpinning) setActionProgressVisible(vh, false);
-					cb.run();
+					if (cb != null){
+						//TODO WHY NULL CHECK
+						cb.run();
+					}
 				}
 				@Override
 				public void onError(ErrorResponse error){
@@ -154,11 +157,14 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 			item.status.reactions.forEach(r->r.request=r.getUrl(item.playGifs)!=null
 					? new UrlImageLoaderRequest(r.getUrl(item.playGifs), 0, V.sp(24))
 					: null);
-			emojiKeyboard=new CustomEmojiPopupKeyboard(
-					(Activity) item.parentFragment.getContext(),
-					item.accountID,
+			if (item.status.reactions.isEmpty()){
+				//addButton.setVisibility(View.GONE);
+			}
+			emojiKeyboard=new CustomEmojiReactionPopupKeyboard(
+					this.item.parentFragment.getActivity(),
+					this.item.parentFragment.getAccountID(),
 					AccountSessionManager.getInstance().getCustomEmojis(item.parentFragment.getSession()),
-					item.parentFragment.getSession(), true);
+					item.parentFragment.getSession());
 			emojiKeyboard.setListener(this);
 			space.setVisibility(View.GONE);
 			root.addView(emojiKeyboard.getView());
@@ -183,6 +189,7 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 
 		@Override
 		public void onEmojiSelected(Emoji emoji) {
+			Log.e("mrrp mrrp", "onEmojiSelected: ");
 			addEmojiReaction(emoji.shortcode, emoji);
 			hideEmojiKeyboard();
 		}
@@ -360,13 +367,19 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 							if(!r.name.equals(reaction.name)) continue;
 							if(deleting && r.count==1) {
 								parent.status.reactions.remove(i);
-								adapter.notifyItemRemoved(i);
+								//TODO this should never be null
+								if (adapter!=null){
+									adapter.notifyItemRemoved(i);
+								}
 								break;
 							}
 							r.me=!deleting;
 							if(deleting) r.count--;
 							else r.count++;
-							adapter.notifyItemChanged(i);
+							if (adapter!=null && adapter.getItemCount() < i) {
+								//TODO this should never be null or item count shouldnt dec
+								adapter.notifyItemChanged(i);
+							}
 							break;
 						}
 

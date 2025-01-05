@@ -863,4 +863,6 @@
     <string name="sk_button_react">meow!</string>
     <string name="enter_emoji_hint">meow here</string>
     <string name="theme_neon">Neonpink</string>
+    <string name="sk_enter_emoji_hint">meow emote text here</string>
+	<string name="mo_emoji_recent">recent meows</string>
 </resources>

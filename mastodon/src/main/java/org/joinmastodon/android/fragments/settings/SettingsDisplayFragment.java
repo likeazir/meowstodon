@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -91,12 +92,13 @@ public class SettingsDisplayFragment extends BaseSettingsFragment<Void>{
 		};
 		new M3AlertDialogBuilder(getActivity())
 				.setTitle(R.string.settings_theme)
-				.setSingleChoiceItems((String[])IntStream.of(R.string.theme_light, R.string.theme_dark, R.string.theme_auto).mapToObj(this::getString).toArray(String[]::new),
+				.setSingleChoiceItems((String[])IntStream.of(R.string.theme_light, R.string.theme_dark, R.string.theme_auto, R.string.theme_neon).mapToObj(this::getString).toArray(String[]::new),
 						selected, (dlg, item)->{
 							GlobalUserPreferences.ThemePreference pref=switch(item){
 								case 0 -> GlobalUserPreferences.ThemePreference.LIGHT;
 								case 1 -> GlobalUserPreferences.ThemePreference.DARK;
 								case 2 -> GlobalUserPreferences.ThemePreference.AUTO;
+								case 3 -> GlobalUserPreferences.ThemePreference.NEONPINK;
 								default -> throw new IllegalStateException("Unexpected value: "+item);
 							};
 							if(pref!=GlobalUserPreferences.theme){

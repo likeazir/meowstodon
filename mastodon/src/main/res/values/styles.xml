@@ -723,4 +723,38 @@
 	<style name="popup_menu_item_text" parent="m3_body_large">
 		<item name="android:textColor">?colorM3OnSurface</item>
 	</style>
+
+	<style name="Neonpink" parent="Theme.Mastodon.Light">
+		<item name="colorM3Primary">@color/md_theme_primary</item>
+		<item name="colorM3OnPrimary">@color/md_theme_onPrimary</item>
+		<item name="colorM3PrimaryContainer">@color/md_theme_primaryContainer</item>
+		<item name="colorM3OnPrimaryContainer">@color/md_theme_onPrimaryContainer</item>
+		<item name="colorM3Secondary">@color/md_theme_secondary</item>
+		<item name="colorM3OnSecondary">@color/md_theme_onSecondary</item>
+		<item name="colorM3SecondaryContainer">@color/md_theme_secondaryContainer</item>
+		<item name="colorM3OnSecondaryContainer">@color/md_theme_onSecondaryContainer</item>
+		<item name="colorM3Tertiary">@color/md_theme_tertiary</item>
+		<item name="colorM3OnTertiary">@color/md_theme_onTertiary</item>
+		<item name="colorM3TertiaryContainer">@color/md_theme_tertiaryContainer</item>
+		<item name="colorM3OnTertiaryContainer">@color/md_theme_onTertiaryContainer</item>
+		<item name="colorM3Background">@color/md_theme_background</item>
+		<item name="colorM3OnBackground">@color/md_theme_onBackground</item>
+		<item name="colorM3Surface">@color/md_theme_surface</item>
+		<item name="colorM3OnSurface">@color/md_theme_onSurface</item>
+		<item name="colorM3SurfaceVariant">@color/md_theme_surfaceVariant</item>
+		<item name="colorM3OnSurfaceVariant">@color/md_theme_onSurfaceVariant</item>
+		<item name="colorM3Outline">@color/md_theme_outline</item>
+		<item name="colorM3OutlineVariant">@color/md_theme_outlineVariant</item>
+		<item name="colorM3DisabledBackground">@color/md_theme_surfaceDim</item>
+		<item name="colorM3PressedOverlay">@color/md_theme_surfaceBright</item>
+		<item name="colorM3Error">@color/md_theme_error</item>
+		<item name="colorM3OnError">@color/md_theme_onError</item>
+		<item name="colorM3ErrorContainer">@color/md_theme_errorContainer</item>
+		<item name="colorM3OnErrorContainer">@color/md_theme_onErrorContainer</item>
+		<item name="colorM3PrimaryInverse">@color/md_theme_inversePrimary</item>
+		<item name="colorM3SurfaceInverse">@color/md_theme_inverseSurface</item>
+		<item name="colorM3OnSurfaceInverse">@color/md_theme_inverseOnSurface</item>
+		<item name="android:textColor">@color/md_theme_onPrimary</item>
+		<item name="android:textColorLink">@color/colorHigh</item>
+	</style>
 </resources>

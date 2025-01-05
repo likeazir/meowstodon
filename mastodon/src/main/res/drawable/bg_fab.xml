@@ -14,8 +14,8 @@
 		</shape>
 	</item>
 	<item>
-		<shape android:tint="?colorM3Primary">
-			<solid android:color="#1C000000"/>
+		<shape android:color="?colorM3Primary">
+			<solid android:color="#A0000000"/>
 			<corners android:radius="16dp"/>
 		</shape>
 	</item>
