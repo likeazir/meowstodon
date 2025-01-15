@@ -4,6 +4,14 @@ dependencyResolutionManagement {
 		google()
 		mavenCentral()
 		mavenLocal()
+		maven {
+			url = uri("https://maven.pkg.github.com/likeazir/appkit")
+			credentials {
+				username = System.getenv("USERNAME")
+				password = System.getenv("TOKEN")
+			}
+
+		}
 	}
 }
 rootProject.name = "Meowstodon"
