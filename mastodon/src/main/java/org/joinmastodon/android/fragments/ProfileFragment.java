@@ -292,13 +292,17 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 
 		tabbar.setTabTextColors(UiUtils.getThemeColor(getActivity(), R.attr.colorM3OnSurfaceVariant), UiUtils.getThemeColor(getActivity(), R.attr.colorM3Primary));
 		tabbar.setTabTextSize(V.dp(14));
-		tabLayoutMediator=new TabLayoutMediator(tabbar, pager, (tab, position)->tab.setText(switch(position){
-			case 0 -> R.string.profile_featured;
-			case 1 -> R.string.profile_timeline;
-			case 2 -> R.string.profile_about;
-			case 3 -> R.string.profile_saved_posts;
-			default -> throw new IllegalStateException();
-		}));
+		tabLayoutMediator=new TabLayoutMediator(tabbar, pager, (tab, position)->{
+			tab.setText(switch(position){
+				case 0 -> R.string.profile_featured;
+				case 1 -> R.string.profile_timeline;
+				case 2 -> R.string.profile_about;
+				case 3 -> R.string.profile_saved_posts;
+				default -> throw new IllegalStateException();
+			});
+			tab.view.textView.setSingleLine();
+			tab.view.textView.setEllipsize(TextUtils.TruncateAt.END);
+		});
 		tabbar.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener(){
 			@Override
 			public void onTabSelected(TabLayout.Tab tab){}
@@ -1095,6 +1099,8 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 	}
 
 	private void exitEditMode(){
+		if(savingEdits)
+			return;
 		if(!isInEditMode)
 			throw new IllegalStateException();
 		isInEditMode=false;

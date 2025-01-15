@@ -17,6 +17,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.JsonArray;
@@ -124,7 +125,7 @@ public class AccountSessionManager{
 
 	public void addAccount(Instance instance, Token token, Account self, Application app, AccountActivationInfo activationInfo){
 		instances.put(instance.getDomain(), instance);
-		runOnDbThread(db->insertInstanceIntoDatabase(db, instance.getDomain(), instance, List.of(), 0));
+		runOnDbThread(db->insertInstanceIntoDatabase(db, instance.getDomain(), instance, null, 0));
 		AccountSession session=new AccountSession(token, self, app, instance.getDomain(), activationInfo==null, activationInfo);
 		sessions.put(session.getID(), session);
 		lastActiveAccountID=session.getID();
@@ -214,7 +215,9 @@ public class AccountSessionManager{
 		});
 		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
 			NotificationManager nm=MastodonApp.context.getSystemService(NotificationManager.class);
-			nm.deleteNotificationChannelGroup(id);
+			try{
+				nm.deleteNotificationChannelGroup(id);
+			}catch(Exception ignore){}
 		}
 		maybeUpdateShortcuts();
 	}
@@ -350,7 +353,7 @@ public class AccountSessionManager{
 					@Override
 					public void onSuccess(Instance instance){
 						instances.put(domain, instance);
-						runOnDbThread(db->insertInstanceIntoDatabase(db, domain, instance, List.of(), 0));
+						runOnDbThread(db->insertInstanceIntoDatabase(db, domain, instance, null, 0));
 						updateInstanceEmojis(instance, domain);
 					}
 
@@ -362,7 +365,7 @@ public class AccountSessionManager{
 	}
 
 	private void updateInstanceEmojis(Instance instance, String domain){
-		new GetCustomEmojis()
+		GetCustomEmojis getCustomEmojisRequest=(GetCustomEmojis)new GetCustomEmojis()
 				.setCallback(new Callback<>(){
 					@Override
 					public void onSuccess(List<Emoji> result){
@@ -377,14 +380,18 @@ public class AccountSessionManager{
 					public void onError(ErrorResponse error){
 
 					}
-				})
-				.execNoAuth(domain);
+				});
+
+		sessions.values().stream().filter(session->session.domain.equals(domain)).findFirst().ifPresentOrElse(
+				(session)->getCustomEmojisRequest.exec(domain, session.token),
+				()->getCustomEmojisRequest.execNoAuth(domain)
+		);
 	}
 
 	private void readInstanceInfo(SQLiteDatabase db, Set<String> domains){
 		for(String domain : domains){
 			final int maxEmojiLength=500000;
-			try(Cursor cursor=db.rawQuery("SELECT domain, instance_obj, substring(emojis,0,?) AS emojis, length(emojis) AS emoji_length, last_updated, version FROM instances WHERE `domain` = ?",
+			try(Cursor cursor=db.rawQuery("SELECT domain, instance_obj, substr(emojis,1,?) AS emojis, length(emojis) AS emoji_length, last_updated, version FROM instances WHERE `domain` = ?",
 					new String[]{String.valueOf(maxEmojiLength) , domain})) {
 				ContentValues values=new ContentValues();
 				while(cursor.moveToNext()){
@@ -398,7 +405,7 @@ public class AccountSessionManager{
 					instances.put(domain, instance);
 					StringBuilder emojiSB=new StringBuilder();
 					String emojiPart=values.getAsString("emojis");
-					if(emojiPart==null){
+					if(TextUtils.isEmpty(emojiPart)){
 						// not putting anything into instancesLastUpdated to force a reload
 						continue;
 					}
@@ -407,7 +414,7 @@ public class AccountSessionManager{
 					int emojiStringLength=values.getAsInteger("emoji_length");
 					if(emojiStringLength>maxEmojiLength){
 						final int pagesize=1000000;
-						for(int start=maxEmojiLength; start<emojiStringLength; start+=pagesize){
+						for(int start=maxEmojiLength + 1; start<=emojiStringLength; start+=pagesize){
 							try(Cursor emojiCursor=db.rawQuery("SELECT substr(emojis,?, ?) FROM instances WHERE `domain` = ?", new String[]{String.valueOf(start), String.valueOf(pagesize), domain})){
 								emojiCursor.moveToNext();
 								emojiSB.append(emojiCursor.getString(0));
@@ -446,7 +453,17 @@ public class AccountSessionManager{
 	}
 
 	public Instance getInstanceInfo(String domain){
-		return instances.get(domain);
+		Instance i=instances.get(domain);
+		if(i!=null)
+			return i;
+		Log.e(TAG, "Instance info for "+domain+" was not found. This should normally never happen. Returning fake instance object");
+		if(BuildConfig.DEBUG)
+			throw new IllegalStateException("Instance info for "+domain+" missing");
+		InstanceV1 fake=new InstanceV1();
+		fake.uri=fake.title=domain;
+		fake.description=fake.version=fake.email="";
+		updateInstanceInfo(domain);
+		return fake;
 	}
 
 	public void updateAccountInfo(String id, Account account){
@@ -617,7 +634,8 @@ public class AccountSessionManager{
 		ContentValues values=new ContentValues();
 		values.put("domain", domain);
 		values.put("instance_obj", MastodonAPIController.gson.toJson(instance));
-		values.put("emojis", MastodonAPIController.gson.toJson(emojis));
+		if(emojis!=null)
+			values.put("emojis", MastodonAPIController.gson.toJson(emojis));
 		values.put("last_updated", lastUpdated);
 		values.put("version", instance.getVersion());
 		db.insertWithOnConflict("instances", null, values, SQLiteDatabase.CONFLICT_REPLACE);
