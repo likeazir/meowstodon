@@ -2,10 +2,9 @@ name: Build and deploy production
  
 on:
   push:
-    branches:
-      - 'develop'
+    tags:        
+      - '**'
   workflow_dispatch:
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -53,8 +52,13 @@ jobs:
           name: mastodon-githubRelease.apk
           path: mastodon/build/outputs/apk/githubRelease/mastodon-githubRelease.apk
 
-      - name: Upload mappings
-        uses: actions/upload-artifact@v4
-        with:
-          name: mappings
-          path: mastodon/build/outputs/mapping/*/mapping.txt
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+        run: |
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
+          gh release upload "${GITHUB_REPOSITORY#*/} ${tag#v}" mastodon/build/outputs/apk/githubRelease/mastodon-githubRelease.apk
+          
