@@ -17,6 +17,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.JsonArray;
@@ -124,7 +125,7 @@ public class AccountSessionManager{
 
 	public void addAccount(Instance instance, Token token, Account self, Application app, AccountActivationInfo activationInfo){
 		instances.put(instance.getDomain(), instance);
-		runOnDbThread(db->insertInstanceIntoDatabase(db, instance.getDomain(), instance, List.of(), 0));
+		runOnDbThread(db->insertInstanceIntoDatabase(db, instance.getDomain(), instance, null, 0));
 		AccountSession session=new AccountSession(token, self, app, instance.getDomain(), activationInfo==null, activationInfo);
 		sessions.put(session.getID(), session);
 		lastActiveAccountID=session.getID();
@@ -214,7 +215,9 @@ public class AccountSessionManager{
 		});
 		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
 			NotificationManager nm=MastodonApp.context.getSystemService(NotificationManager.class);
-			nm.deleteNotificationChannelGroup(id);
+			try{
+				nm.deleteNotificationChannelGroup(id);
+			}catch(Exception ignore){}
 		}
 		maybeUpdateShortcuts();
 	}
@@ -350,7 +353,7 @@ public class AccountSessionManager{
 					@Override
 					public void onSuccess(Instance instance){
 						instances.put(domain, instance);
-						runOnDbThread(db->insertInstanceIntoDatabase(db, domain, instance, List.of(), 0));
+						runOnDbThread(db->insertInstanceIntoDatabase(db, domain, instance, null, 0));
 						updateInstanceEmojis(instance, domain);
 					}
 
@@ -362,7 +365,7 @@ public class AccountSessionManager{
 	}
 
 	private void updateInstanceEmojis(Instance instance, String domain){
-		new GetCustomEmojis()
+		GetCustomEmojis getCustomEmojisRequest=(GetCustomEmojis)new GetCustomEmojis()
 				.setCallback(new Callback<>(){
 					@Override
 					public void onSuccess(List<Emoji> result){
@@ -377,44 +380,55 @@ public class AccountSessionManager{
 					public void onError(ErrorResponse error){
 
 					}
-				})
-				.execNoAuth(domain);
+				});
+
+		sessions.values().stream().filter(session->session.domain.equals(domain)).findFirst().ifPresentOrElse(
+				(session)->getCustomEmojisRequest.exec(domain, session.token),
+				()->getCustomEmojisRequest.execNoAuth(domain)
+		);
 	}
 
 	private void readInstanceInfo(SQLiteDatabase db, Set<String> domains){
-		try(Cursor cursor=db.query("instances", new String[]{"domain", "instance_obj", "last_updated", "version"}, "`domain` IN ("+String.join(", ", Collections.nCopies(domains.size(), "?"))+")", domains.toArray(new String[0]), null, null, null)){
-			ContentValues values=new ContentValues();
-			while(cursor.moveToNext()){
-				DatabaseUtils.cursorRowToContentValues(cursor, values);
-				String domain=values.getAsString("domain");
-				int version=values.getAsInteger("version");
-				Instance instance=MastodonAPIController.gson.fromJson(values.getAsString("instance_obj"), switch(version){
-					case 1 -> InstanceV1.class;
-					case 2 -> InstanceV2.class;
-					default -> throw new IllegalStateException("Unexpected value: " + version);
-				});
-				//poor man's pagination / terrible performance
-				StringBuilder emojiString = new StringBuilder();
-				try(Cursor emojiCountCursor=db.rawQuery("select length(emojis) from instances where `domain` = ?", new String[]{domain})){
-					emojiCountCursor.moveToNext();
-					int totalEmostringLen = emojiCountCursor.getInt(0);
-					//max cursor size is 1MB, stay at 0.8MB to prevent crash
-					int pagesize = 800000;
-					for (int i = 0; i < (totalEmostringLen / 800000) + 1; i++){
-						try(Cursor emojiCursor=db.rawQuery("select substr(emojis,?, ?) from instances where `domain` = ?", new String[]{String.valueOf(i * pagesize), String.valueOf(pagesize),domain})){
-							emojiCursor.moveToNext();
-							emojiString.append(emojiCursor.getString(0));
+		for(String domain : domains){
+			final int maxEmojiLength=500000;
+			try(Cursor cursor=db.rawQuery("SELECT domain, instance_obj, substr(emojis,1,?) AS emojis, length(emojis) AS emoji_length, last_updated, version FROM instances WHERE `domain` = ?",
+					new String[]{String.valueOf(maxEmojiLength) , domain})) {
+				ContentValues values=new ContentValues();
+				while(cursor.moveToNext()){
+					DatabaseUtils.cursorRowToContentValues(cursor, values);
+					int version=values.getAsInteger("version");
+					Instance instance=MastodonAPIController.gson.fromJson(values.getAsString("instance_obj"), switch(version){
+						case 1 -> InstanceV1.class;
+						case 2 -> InstanceV2.class;
+						default -> throw new IllegalStateException("Unexpected value: "+version);
+					});
+					instances.put(domain, instance);
+					StringBuilder emojiSB=new StringBuilder();
+					String emojiPart=values.getAsString("emojis");
+					if(TextUtils.isEmpty(emojiPart)){
+						// not putting anything into instancesLastUpdated to force a reload
+						continue;
+					}
+					emojiSB.append(emojiPart);
+					//get emoji in chunks of 1MB if it didn't fit in the first query
+					int emojiStringLength=values.getAsInteger("emoji_length");
+					if(emojiStringLength>maxEmojiLength){
+						final int pagesize=1000000;
+						for(int start=maxEmojiLength + 1; start<=emojiStringLength; start+=pagesize){
+							try(Cursor emojiCursor=db.rawQuery("SELECT substr(emojis,?, ?) FROM instances WHERE `domain` = ?", new String[]{String.valueOf(start), String.valueOf(pagesize), domain})){
+								emojiCursor.moveToNext();
+								emojiSB.append(emojiCursor.getString(0));
+							}
 						}
 					}
+					List<Emoji> emojis=MastodonAPIController.gson.fromJson(emojiSB.toString(), new TypeToken<List<Emoji>>(){}.getType());
+					customEmojis.put(domain, groupCustomEmojis(emojis));
+					instancesLastUpdated.put(domain, values.getAsLong("last_updated"));
 				}
-				List<Emoji> emojis=MastodonAPIController.gson.fromJson(emojiString.toString(), new TypeToken<List<Emoji>>(){}.getType());
-				instances.put(domain, instance);
-				customEmojis.put(domain, groupCustomEmojis(emojis));
-				instancesLastUpdated.put(domain, values.getAsLong("last_updated"));
+			}catch(Exception ex){
+				Log.d(TAG, "readInstanceInfo failed", ex);
+				// instancesLastUpdated will not contain that domain, so instance data will be forced to be reloaded
 			}
-		} catch(Exception ex) {
-			Log.d(TAG, "readInstanceInfo failed", ex);
-			return;
 		}
 		if(!loadedInstances){
 			loadedInstances=true;
@@ -439,7 +453,17 @@ public class AccountSessionManager{
 	}
 
 	public Instance getInstanceInfo(String domain){
-		return instances.get(domain);
+		Instance i=instances.get(domain);
+		if(i!=null)
+			return i;
+		Log.e(TAG, "Instance info for "+domain+" was not found. This should normally never happen. Returning fake instance object");
+		if(BuildConfig.DEBUG)
+			throw new IllegalStateException("Instance info for "+domain+" missing");
+		InstanceV1 fake=new InstanceV1();
+		fake.uri=fake.title=domain;
+		fake.description=fake.version=fake.email="";
+		updateInstanceInfo(domain);
+		return fake;
 	}
 
 	public void updateAccountInfo(String id, Account account){
@@ -610,7 +634,8 @@ public class AccountSessionManager{
 		ContentValues values=new ContentValues();
 		values.put("domain", domain);
 		values.put("instance_obj", MastodonAPIController.gson.toJson(instance));
-		values.put("emojis", MastodonAPIController.gson.toJson(emojis));
+		if(emojis!=null)
+			values.put("emojis", MastodonAPIController.gson.toJson(emojis));
 		values.put("last_updated", lastUpdated);
 		values.put("version", instance.getVersion());
 		db.insertWithOnConflict("instances", null, values, SQLiteDatabase.CONFLICT_REPLACE);

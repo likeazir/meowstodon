@@ -1,9 +1,6 @@
-name: Build and deploy production
+name: Build and deploy beta
  
 on:
-  push:
-    branches:
-      - 'develop'
   workflow_dispatch:
 
 jobs:
@@ -39,22 +36,11 @@ jobs:
           echo "apply from: 'ci_signing.gradle'" >> mastodon/build.gradle
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
 
-      - name: Build githubRelease apk
-        run: ./gradlew assembleGithubRelease
+      - name: Build and deploy beta to Google Play
+        run: bundle exec fastlane beta
         env:
           KEYSTORE_FILE: ${{ steps.android_keystore.outputs.filePath }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          USERNAME: ${{ github.actor }}
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload githubRelease apk
-        uses: actions/upload-artifact@v4
-        with:
-          name: mastodon-githubRelease.apk
-          path: mastodon/build/outputs/apk/githubRelease/mastodon-githubRelease.apk
-
-      - name: Upload mappings
-        uses: actions/upload-artifact@v4
-        with:
-          name: mappings
-          path: mastodon/build/outputs/mapping/*/mapping.txt
+          SUPPLY_JSON_KEY_DATA: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          SUPPLY_SKIP_UPLOAD_METADATA: true
+          SUPPLY_SKIP_UPLOAD_CHANGELOGS: true

@@ -152,6 +152,7 @@ public class UiUtils{
 			}
 			intent.setComponent(browserActivity);
 		}
+		intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://"+context.getPackageName()));
 		context.startActivity(intent);
 	}
 
@@ -500,7 +501,7 @@ public class UiUtils{
 							}
 						})
 						.exec(accountID);
-			}).show();
+			}, accountID).show();
 		}else{
 			new SetDomainBlocked(account.getDomain(), false)
 					.setCallback(new Callback<>(){
@@ -650,6 +651,9 @@ public class UiUtils{
 	}
 
 	public static <T> void updateList(List<T> oldList, List<T> newList, RecyclerView list, RecyclerView.Adapter<?> adapter, BiPredicate<T, T> areItemsSame){
+		RecyclerView.ItemAnimator animator=list.getItemAnimator();
+		if(animator!=null)
+			animator.endAnimations();
 		// Save topmost item position and offset because for some reason RecyclerView would scroll the list to weird places when you insert items at the top
 		int topItem, topItemOffset;
 		if(list.getChildCount()==0){
