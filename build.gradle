@@ -6,8 +6,20 @@ buildscript {
 		maven {
 			url = uri("https://maven.pkg.github.com/likeazir/appkit")
 			credentials {
-				username = System.getenv("USERNAME")
-				password = System.getenv("TOKEN")
+				file('.env').readLines().each() {
+					username = System.getenv("USERNAME")
+					password = System.getenv("TOKEN")
+					if (!it.isEmpty() && !it.startsWith("#")) {
+						def pos = it.indexOf("=")
+						def key = it.substring(0, pos)
+						def value = it.substring(pos + 1)
+						if (key == "USERNAME") {
+							username = value
+						} else if (key == "TOKEN") {
+							password = value
+						}
+					}
+				}
 			}
 
 		}
