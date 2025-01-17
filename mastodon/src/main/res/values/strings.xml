@@ -240,7 +240,6 @@
 	<string name="local_timeline_info_banner">These are all the posts from all users in your server (%s).</string>
 	<string name="recommended_accounts_info_banner">You might like these accounts based on others you follow.</string>
 	<string name="see_new_posts">New posts</string>
-	<string name="load_missing_posts">Load missing posts</string>
 	<string name="follow_back">Follow back</string>
 	<string name="button_follow_pending">Pending</string>
 	<string name="follows_you">Follows you</string>
@@ -675,7 +674,6 @@
 	<string name="block_user_x_instead">Block %s instead</string>
 	<string name="users_cant_see_blocked">You won’t see posts or notifications from users on this server.</string>
 	<string name="you_wont_see_server_posts">You won’t see any posts from users on this server.</string>
-	<string name="server_followers_will_be_removed">Your followers from this server will be removed.</string>
 	<string name="server_cant_mention_or_follow_you">Nobody from this server can follow you.</string>
 	<string name="server_can_interact_with_older">People from this server can interact with your old posts.</string>
 	<string name="unblocked_domain_x">Unblocked domain %s</string>
@@ -855,14 +853,14 @@
 		<item quantity="one">%,d person you follow</item>
 		<item quantity="other">%,d people you follow</item>
 	</plurals>
-	<plurals name="sk_users_reacted_with">mreowactions</plurals>
 	<!-- The complete string will look like "You will lose X people you follow". See will_lose_x_following -->
 	<string name="server_x_following_will_be_removed">You will lose %s.</string>
 	<string name="load_missing_posts_above">Load missing posts above</string>
 	<string name="load_missing_posts_below">Load missing posts below</string>
-    <string name="sk_button_react">meow!</string>
-    <string name="enter_emoji_hint">meow here</string>
-    <string name="theme_neon">Neonpink</string>
-    <string name="sk_enter_emoji_hint">meow emote text here</string>
+	<plurals name="sk_users_reacted_with">mreowactions</plurals>
+	<string name="sk_button_react">meow!</string>
+	<string name="enter_emoji_hint">meow here</string>
+	<string name="theme_neon">Neonpink</string>
+	<string name="sk_enter_emoji_hint">meow emote text here</string>
 	<string name="mo_emoji_recent">recent meows</string>
 </resources>

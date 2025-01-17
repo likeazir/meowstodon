@@ -1,17 +1,30 @@
-name: Build and deploy
+name: Build and deploy production
  
 on:
   push:
-    branches:
-      - 'ci_setup'
+    tags:        
+      - '**'
   workflow_dispatch:
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install GitHub CLI
+        run: |
+          (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
+          && sudo mkdir -p -m 755 /etc/apt/keyrings \
+          && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+          && cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+          && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && sudo apt update \
+          && sudo apt install gh -y
 
+      - name: Check GitHub CLI
+        run: |
+          gh --version
+        
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
@@ -44,6 +57,8 @@ jobs:
         env:
           KEYSTORE_FILE: ${{ steps.android_keystore.outputs.filePath }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          USERNAME: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload githubRelease apk
         uses: actions/upload-artifact@v4
@@ -51,8 +66,13 @@ jobs:
           name: mastodon-githubRelease.apk
           path: mastodon/build/outputs/apk/githubRelease/mastodon-githubRelease.apk
 
-      - name: Upload mappings
-        uses: actions/upload-artifact@v4
-        with:
-          name: mappings
-          path: mastodon/build/outputs/mapping/*/mapping.txt
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+        run: |
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${GITHUB_REPOSITORY#*/} ${tag#v}"
+          gh release upload "$tag" mastodon/build/outputs/apk/githubRelease/mastodon-githubRelease.apk
+          
