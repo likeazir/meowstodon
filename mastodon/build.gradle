@@ -14,7 +14,7 @@ android {
 		minSdk 23
 		targetSdk 34
 		versionCode 133
-		versionName "2.9.4+meow.3"
+		versionName "2.9.4+meow.4"
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 	}
 
