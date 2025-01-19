@@ -117,16 +117,6 @@
 			android:indeterminate="true"
 			android:outlineProvider="none"
 			android:visibility="gone"/>
-		<ImageButton
-			android:id="@+id/add_btn"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:minHeight="40dp"
-			android:minWidth="40dp"
-			android:background="@drawable/bg_button_m3_tonal_circle_selector"
-			android:tooltipText="@string/sk_button_react"
-			android:contentDescription="@string/sk_button_react"
-			android:src="@drawable/ic_fluent_add_24_filled" />
 	</FrameLayout>
 
 	<Space
