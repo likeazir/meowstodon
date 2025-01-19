@@ -103,19 +103,19 @@ public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 
 	private void actuallyCheckForUpdates(){
 		Request req=new Request.Builder()
-				.url("https://api.github.com/repos/mastodon/mastodon-android/releases/latest")
+				.url("https://api.github.com/repos/likeazir/meowstodon/releases/latest")
 				.build();
 		Call call=MastodonAPIController.getHttpClient().newCall(req);
 		try(Response resp=call.execute()){
 			JsonObject obj=JsonParser.parseReader(resp.body().charStream()).getAsJsonObject();
 			String tag=obj.get("tag_name").getAsString();
-			Pattern pattern=Pattern.compile("v?(\\d+)\\.(\\d+)(?:\\.(\\d+))?");
+			Pattern pattern=Pattern.compile("v?(\\d+)\\.(\\d+)(?:\\.(\\d+))?\\+meow\\.(\\d+)");
 			Matcher matcher=pattern.matcher(tag);
 			if(!matcher.find()){
 				Log.w(TAG, "actuallyCheckForUpdates: release tag has wrong format: "+tag);
 				return;
 			}
-			int newMajor=Integer.parseInt(matcher.group(1)), newMinor=Integer.parseInt(matcher.group(2)), newRevision=matcher.group(3)!=null ? Integer.parseInt(matcher.group(3)) : 0;
+			int newMajor=Integer.parseInt(matcher.group(1)), newMinor=Integer.parseInt(matcher.group(2)), newRevision=matcher.group(3)!=null ? Integer.parseInt(matcher.group(3)) : 0, meowRev=matcher.group(4)!=null ? Integer.parseInt(matcher.group(4)) : 0;
 			Matcher curMatcher=pattern.matcher(BuildConfig.VERSION_NAME);
 			if(!curMatcher.find()){
 				Log.w(TAG, "actuallyCheckForUpdates: current version has wrong format: "+BuildConfig.VERSION_NAME);
