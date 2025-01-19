@@ -89,6 +89,11 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 		super(20);
 	}
 
+
+	public void scrollBy(int x, int y){
+		list.scrollBy(x, y);
+	}
+
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -767,7 +772,7 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 		return AccountSessionManager.getInstance().getLastActiveAccount().domain;
 	}
 
-	protected class DisplayItemsAdapter extends UsableRecyclerView.Adapter<BindableViewHolder<StatusDisplayItem>> implements ImageLoaderRecyclerAdapter{
+    protected class DisplayItemsAdapter extends UsableRecyclerView.Adapter<BindableViewHolder<StatusDisplayItem>> implements ImageLoaderRecyclerAdapter{
 
 		public DisplayItemsAdapter(){
 			super(imgLoader);

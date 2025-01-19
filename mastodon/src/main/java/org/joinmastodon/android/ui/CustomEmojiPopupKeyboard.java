@@ -205,15 +205,11 @@ public class CustomEmojiPopupKeyboard extends PopupKeyboard{
 			adapter.notifyDataSetChanged();
 		}
 	}
-
-	public void customToggleKeyboardPopup(){
-		if(super.isVisible()){
-			adapter.removeAllAdapters();
-		}else{
-			adapter.addAdapter(new SingleCategoryAdapter(recentEmojiCategory));
-			for(EmojiCategory category : emojis)
-				adapter.addAdapter(new SingleCategoryAdapter(category));
-		}
+	@Override
+	public void toggleKeyboardPopup(View textField){
+		adapter.addAdapter(new SingleCategoryAdapter(recentEmojiCategory));
+		for(EmojiCategory category : emojis)
+			adapter.addAdapter(new SingleCategoryAdapter(category));
 		super.toggleKeyboardPopup(null);
 	}
 

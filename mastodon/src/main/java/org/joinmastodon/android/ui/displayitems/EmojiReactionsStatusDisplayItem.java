@@ -251,7 +251,7 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 		public void onBackspace() {}
 
 		private void onReactClick(View v){
-			emojiKeyboard.customToggleKeyboardPopup();
+			emojiKeyboard.toggleKeyboardPopup(v);
 			v.setSelected(emojiKeyboard.isVisible());
 			space.setVisibility(emojiKeyboard.isVisible() ? View.VISIBLE : View.GONE);
 			DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -259,9 +259,8 @@ public class EmojiReactionsStatusDisplayItem extends StatusDisplayItem {
 			((Activity) v.getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 			v.getLocationOnScreen(locationOnScreen);
 			double fromScreenTop = (double) locationOnScreen[1] / displayMetrics.heightPixels;
-			if (fromScreenTop > 0.75) {
-				//TODO lol
-				//item.parentFragment.scrollBy(0, (int) (displayMetrics.heightPixels * 0.3));
+			if (fromScreenTop > 0.6){
+				item.parentFragment.scrollBy(0, (int) (displayMetrics.heightPixels * 0.4));
 			}
 		}
 
