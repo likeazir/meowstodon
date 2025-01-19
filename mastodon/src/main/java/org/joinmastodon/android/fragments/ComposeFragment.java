@@ -243,7 +243,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 	@Override
 	public View onCreateContentView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		creatingView=true;
-		emojiKeyboard=new CustomEmojiPopupKeyboard(getActivity(), getArguments().getString("account"), customEmojis, instanceDomain);
+		emojiKeyboard=new CustomEmojiPopupKeyboard(getActivity(), getArguments().getString("account"), customEmojis, instanceDomain, false);
 		emojiKeyboard.setListener(new CustomEmojiPopupKeyboard.Listener(){
 			@Override
 			public void onEmojiSelected(Emoji emoji){

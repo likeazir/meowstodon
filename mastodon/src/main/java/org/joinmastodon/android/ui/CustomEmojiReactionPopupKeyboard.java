@@ -8,6 +8,6 @@ import java.util.List;
 
 public class CustomEmojiReactionPopupKeyboard extends CustomEmojiPopupKeyboard{
 	public CustomEmojiReactionPopupKeyboard(Activity activity, String account, List<EmojiCategory> customEmojis, String session){
-		super(activity, account, customEmojis, session);
+		super(activity, account, customEmojis, session, true);
 	}
 }
