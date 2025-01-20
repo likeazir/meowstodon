@@ -26,6 +26,8 @@ import org.joinmastodon.android.api.MastodonAPIController;
 import org.joinmastodon.android.events.SelfUpdateStateChangedEvent;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -115,21 +117,18 @@ public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 				Log.w(TAG, "actuallyCheckForUpdates: release tag has wrong format: "+tag);
 				return;
 			}
-			int newMajor=Integer.parseInt(matcher.group(1)), newMinor=Integer.parseInt(matcher.group(2)), newRevision=matcher.group(3)!=null ? Integer.parseInt(matcher.group(3)) : 0, meowRev=matcher.group(4)!=null ? Integer.parseInt(matcher.group(4)) : 0;
+			int newMajor=Integer.parseInt(matcher.group(1)), newMinor=Integer.parseInt(matcher.group(2)), newRevision=matcher.group(3)!=null ? Integer.parseInt(matcher.group(3)) : 0, newMeowRev=matcher.group(4)!=null ? Integer.parseInt(matcher.group(4)) : 0;
 			Matcher curMatcher=pattern.matcher(BuildConfig.VERSION_NAME);
 			if(!curMatcher.find()){
 				Log.w(TAG, "actuallyCheckForUpdates: current version has wrong format: "+BuildConfig.VERSION_NAME);
 				return;
 			}
-			int curMajor=Integer.parseInt(curMatcher.group(1)), curMinor=Integer.parseInt(curMatcher.group(2)), curRevision=matcher.group(3)!=null ? Integer.parseInt(curMatcher.group(3)) : 0;
-			long newVersion=((long)newMajor << 32) | ((long)newMinor << 16) | newRevision;
-			long curVersion=((long)curMajor << 32) | ((long)curMinor << 16) | curRevision;
-			if(newVersion>curVersion || forceUpdate){
+			int curMajor=Integer.parseInt(curMatcher.group(1)), curMinor=Integer.parseInt(curMatcher.group(2)), curRevision=matcher.group(3)!=null ? Integer.parseInt(curMatcher.group(3)) : 0, curMeowRev=matcher.group(4)!=null ? Integer.parseInt(matcher.group(4)) : 0;;
+			BigInteger curVersion=new BigInteger(String.valueOf(curMajor)+curMinor+curRevision+curRevision);
+			BigInteger newVersion=new BigInteger(String.valueOf(newMajor)+newMinor+newRevision+newMeowRev);
+			if(newVersion.compareTo(curVersion)>0 || forceUpdate){
 				forceUpdate=false;
-				String version=newMajor+"."+newMinor;
-				if(matcher.group(3)!=null)
-					version+="."+newRevision;
-				Log.d(TAG, "actuallyCheckForUpdates: new version: "+version);
+				Log.d(TAG, "actuallyCheckForUpdates: new version: "+tag);
 				for(JsonElement el:obj.getAsJsonArray("assets")){
 					JsonObject asset=el.getAsJsonObject();
 					if("application/vnd.android.package-archive".equals(asset.get("content_type").getAsString()) && "uploaded".equals(asset.get("state").getAsString())){
@@ -138,12 +137,12 @@ public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 
 						UpdateInfo info=new UpdateInfo();
 						info.size=size;
-						info.version=version;
+						info.version=tag;
 						this.info=info;
 
 						getPrefs().edit()
 								.putLong("apkSize", size)
-								.putString("version", version)
+								.putString("version", tag)
 								.putString("apkURL", url)
 								.putInt("checkedByBuild", BuildConfig.VERSION_CODE)
 								.remove("downloadID")
@@ -185,7 +184,11 @@ public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 		if(state==UpdateState.DOWNLOADING)
 			throw new IllegalStateException();
 		DownloadManager dm=MastodonApp.context.getSystemService(DownloadManager.class);
-		MastodonApp.context.registerReceiver(downloadCompletionReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
+			MastodonApp.context.registerReceiver(downloadCompletionReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_NOT_EXPORTED);
+		} else {
+			MastodonApp.context.registerReceiver(downloadCompletionReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+		}
 		downloadID=dm.enqueue(
 				new DownloadManager.Request(Uri.parse(getPrefs().getString("apkURL", null)))
 						.setDestinationUri(Uri.fromFile(getUpdateApkFile()))
