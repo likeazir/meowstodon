@@ -34,8 +34,5 @@ public class MastodonApp extends Application{
 		if(BuildConfig.DEBUG){
 			WebView.setWebContentsDebuggingEnabled(true);
 		}
-		//GithubSelfUpdater.forceUpdate = true;
-		//Log.e("awawawa", String.valueOf(GithubSelfUpdater.getInstance().getUpdateInfo()));
-		//GithubSelfUpdater.getInstance().maybeCheckForUpdates();
 	}
 }
