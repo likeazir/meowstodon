@@ -68,7 +68,11 @@ public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 				DownloadManager dm=MastodonApp.context.getSystemService(DownloadManager.class);
 				state=dm.getUriForDownloadedFile(downloadID)==null ? UpdateState.DOWNLOADING : UpdateState.DOWNLOADED;
 				if(state==UpdateState.DOWNLOADING){
-					MastodonApp.context.registerReceiver(downloadCompletionReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+					if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
+						MastodonApp.context.registerReceiver(downloadCompletionReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_NOT_EXPORTED);
+					} else {
+						MastodonApp.context.registerReceiver(downloadCompletionReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+					}
 				}
 			}
 		}else if(checkedByBuild!=BuildConfig.VERSION_CODE && checkedByBuild>0){
